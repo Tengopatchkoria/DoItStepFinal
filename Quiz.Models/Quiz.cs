@@ -6,7 +6,11 @@ using System.Threading.Tasks;
 
 namespace Quiz.Models
 {
-    internal class Quiz
+    public class Quizz
     {
+        public byte Id { get; set; } 
+        public byte UserId { get; set; }
+        public List<Question> QuestionList { get; set; }
+
     }
 }
