@@ -21,10 +21,13 @@ namespace Quiz.Repository
 
         public Quizz GetQuiz(byte id) => _quizes.FirstOrDefault(x => x.Id == id);
 
+        public byte GetLength() => (byte)_quizes.Count;
+
         public void DeleteQuiz(byte id, User user)
         {
             if (GetQuiz(id).UserId == user.id)
                 _quizes.Remove(GetQuiz(id));
+            SaveData();
         }
 
         public void EditQuiz(byte id, byte q_id, User user)
@@ -34,14 +37,24 @@ namespace Quiz.Repository
                 string newQ = Console.ReadLine();
                 GetQuiz(id).QuestionList.FirstOrDefault(x => x.Id == q_id).QueStion = newQ;
             }
+            SaveData();
         }
+
+        public void AddQuiz(Quizz quiz)
+        {
+            quiz.Id = (byte)((byte)_quizes.Count + 1);
+            _quizes.Add(quiz);
+            SaveData();
+        }
+
 
         private List<Quizz> LoadData()
         {
             if (!File.Exists(_filePath))
                 return new List<Quizz>();
-
             string text = File.ReadAllText(_filePath);
+            if (text != null)
+                return new List<Quizz>();
             return JsonSerializer.Deserialize<List<Quizz>>(text);
         }
         private void SaveData()
