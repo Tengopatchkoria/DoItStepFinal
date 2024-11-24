@@ -21,24 +21,35 @@ namespace Quiz.Repository
 
         public Quizz GetQuiz(byte id) => _quizes.FirstOrDefault(x => x.Id == id);
 
-        public byte GetLength() => (byte)_quizes.Count;
+        public int GetLength() => _quizes.Count;
 
-        public void DeleteQuiz(byte id, User user)
+        public void ModifyQuiz(int command, byte qId, byte uId)
         {
-            if (GetQuiz(id).UserId == user.id)
+            if (command == 1)
+                DeleteQuiz(qId, uId);
+            else if (command == 0)
+            {
+                Console.WriteLine("Which Question Do you want to modify?");
+                byte QuestionId = byte.Parse(Console.ReadLine());
+                EditQuiz(QuestionId, qId, uId);
+            }
+        }
+        public void DeleteQuiz(byte id, byte uId)
+        {
+            if (GetQuiz(id).UserId == uId)
                 _quizes.Remove(GetQuiz(id));
             SaveData();
         }
 
-        public void EditQuiz(byte id, byte q_id, User user)
+        public void EditQuiz(byte id, byte qId, byte uId)
         {
-            if (GetQuiz(id).UserId == user.id)
-            {
-                string newQ = Console.ReadLine();
-                GetQuiz(id).QuestionList.FirstOrDefault(x => x.Id == q_id).QueStion = newQ;
-            }
+            QuestionRepository q = new();
+
+            if (GetQuiz(qId).UserId == uId)
+                q.ReWriteQuestion(id, GetQuiz(qId).QuestionList);
             SaveData();
         }
+
 
         public void AddQuiz(Quizz quiz)
         {
@@ -53,7 +64,7 @@ namespace Quiz.Repository
             if (!File.Exists(_filePath))
                 return new List<Quizz>();
             string text = File.ReadAllText(_filePath);
-            if (text != null)
+            if (text == null)
                 return new List<Quizz>();
             return JsonSerializer.Deserialize<List<Quizz>>(text);
         }

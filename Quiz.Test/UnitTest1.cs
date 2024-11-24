@@ -1,3 +1,6 @@
+using Quiz.Repository;
+using System.Threading.Tasks.Sources;
+
 namespace Quiz.Test
 {
     public class UnitTest1
@@ -5,7 +8,6 @@ namespace Quiz.Test
         [Fact]
         public void Test1()
         {
-
         }
     }
 }
