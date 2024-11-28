@@ -9,6 +9,7 @@ namespace Quiz.Models
     public class Quizz
     {
         public byte Id { get; set; } 
+        public string Name { get; set; }
         public byte UserId { get; set; }
         public List<Question> QuestionList { get; set; }
 

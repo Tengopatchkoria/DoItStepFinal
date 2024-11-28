@@ -6,8 +6,11 @@ using System.Runtime.CompilerServices;
 using System.Security.Principal;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Timers;
 using static System.Formats.Asn1.AsnWriter;
+using Home = Quiz.Repository.QuizRepository;
 
 namespace Quiz.Repository
 {
@@ -16,25 +19,49 @@ namespace Quiz.Repository
         private readonly string _filePath;
         private readonly List<User> _users;
         public User MainUser;
+        private int _remainingSeconds = 120;
+        private static System.Timers.Timer timer;
 
+        public string QuizRelativePath()
+        {
+            string QuizRelativePath = Path.Combine("Data", "Quiz.json");
+            string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            string projectDirectory = Directory.GetParent(baseDirectory).Parent.Parent.Parent.FullName;
+
+            return Path.Combine(projectDirectory, QuizRelativePath);
+        }
+
+        public string UsersRelativePath()
+        {
+            string UserRelativePath = Path.Combine("Data", "Users.json");
+            string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            string projectDirectory = Directory.GetParent(baseDirectory).Parent.Parent.Parent.FullName;
+
+            return Path.Combine(projectDirectory, UserRelativePath);
+        }
         public UserRepository(string filePath, string name, string mail)
         {
             _filePath = filePath;
             _users = LoadData();
+            Console.Clear();
             foreach (var user in _users)
             {
                 if (user.Name == name)
                 {
                     MainUser = LoginUser(name);
+                    Console.WriteLine($"==== Welcome Back {name} ====");
+                    Console.WriteLine("1.Take a quiz \n2.Create a quiz \n3.Logout \n4.Get Personal Info");
                 }
             }
             if (MainUser == null)
             {
                 MainUser = RegUser(name, mail);
+                Console.WriteLine($"=== Hello {name} ===\nIn this quiz app you can create your quizes or enjoy with already created ones" +
+                $"\n1.Take a quiz \n2.Create a quiz \n3.Logout");
             }
         }
 
-        public string GetInfo() => $"{MainUser.Name} with the {MainUser.Mail} mail has best score of {MainUser.BestScore}";
+        public string GetInfo() => $"{MainUser.Name} With The {MainUser.Mail} Mail Has Best Score Of {MainUser.BestScore}";
         public void GetTop10()
         {
             var topUsers = _users
@@ -45,26 +72,6 @@ namespace Quiz.Repository
             {
                 Console.WriteLine($"User:{user.Name} Top Score:{user.BestScore}");
             }
-        }
-
-        private List<User> LoadData()
-        {
-            if (!File.Exists(_filePath))
-                return new List<User>();
-
-            string text = File.ReadAllText(_filePath);
-            if (text == null)
-                return new List<User>();
-            return JsonSerializer.Deserialize<List<User>>(text);
-        }
-        private void SaveData()
-        {
-            string jsonString = JsonSerializer.Serialize(value: _users, options: new JsonSerializerOptions()
-            {
-                WriteIndented = true
-            });
-
-            File.WriteAllText(_filePath, jsonString);
         }
 
         private User LoginUser(string name)
@@ -91,6 +98,12 @@ namespace Quiz.Repository
             return user;
         }
 
+        public void LogOut()
+        {
+            MainUser = null;
+            Home.StartPage();
+        }
+
         public static int UpdateScore(string userAnswer, string correctAnswer, int score)
         {
             if (userAnswer.Equals(correctAnswer))
@@ -103,6 +116,9 @@ namespace Quiz.Repository
             List<Question> Qlist = new();
             QuestionRepository q = new();
 
+            Console.WriteLine("Create a name for your quiz");
+            var QuizName = Console.ReadLine();
+
             q.CreateQuestionList(Qlist);
 
             Quizz quizz = new()
@@ -112,14 +128,14 @@ namespace Quiz.Repository
                 QuestionList = Qlist
             };
 
-            QuizRepository Qrepo = new(@"D:\Other\PROGRAMIREBA\C#\DoItStepFinal1\Quiz.Run\Data\Quiz.json");
+
+            QuizRepository Qrepo = new(QuizRelativePath());
             Qrepo.AddQuiz(quizz);
         }
 
         public void TakeQuiz(byte qId)
         {
-            QuizRepository Qrepo = new(@"D:\Other\PROGRAMIREBA\C#\DoItStepFinal1\Quiz.Run\Data\Quiz.json");
-            var quiz = Qrepo.GetQuiz(qId);
+            QuizRepository Qrepo = new(QuizRelativePath()); var quiz = Qrepo.GetQuiz(qId);
             int score = 0;
 
             if (quiz.UserId == this.MainUser.id)
@@ -132,22 +148,73 @@ namespace Quiz.Repository
                 Environment.Exit(100);
             }
 
+            var timer = new System.Timers.Timer(1000);
+            timer.AutoReset = true;
+            timer.Elapsed += OnTimedEvent;
+            timer.Start();
+
+
             foreach (var item in quiz.QuestionList)
             {
+                if (_remainingSeconds <= 0) break;
+
                 Console.WriteLine(item.QueStion);
                 Console.WriteLine($"{item.AnswerOptions[0]}, {item.AnswerOptions[1]}, {item.AnswerOptions[2]}, {item.AnswerOptions[3]}");
                 Console.WriteLine("Type Your answer");
                 var userAnswer = Console.ReadLine();
                 score = UpdateScore(userAnswer, item.CorrectAnswer, score);
+
+                if (_remainingSeconds <= 0) break; 
             }
-            Console.WriteLine($"Nice job, You Scored {score}");
-            if (score > this.MainUser.BestScore)
+
+            if (_remainingSeconds > 0)
             {
-                this.MainUser.BestScore = score;
-                Console.WriteLine($"Nice Work, New Best Score of {score}");
-                SaveData();
+                Console.WriteLine($"Nice job, You Scored {score}");
+                if (score > MainUser.BestScore)
+                {
+                    MainUser.BestScore = score;
+                    Console.WriteLine($"Nice Work, New Best Score of {score}");
+                    SaveData();
+                }
+                Console.WriteLine("Now You can see whether or not you made it into the Top 10 Highest Scorers");
+                GetTop10();
+                Thread.Sleep(1000);
+                Home.UserHomePage(MainUser.Name, MainUser.Mail);
             }
+            else
+            {
+                Console.WriteLine("Time's up! You failed the quiz.");
+                Home.UserHomePage(MainUser.Name, MainUser.Mail);
+            }
+
+            timer.Stop();
+            timer.Dispose();
+
         }
 
+        private List<User> LoadData()
+        {
+            if (!File.Exists(_filePath))
+                return new List<User>();
+
+            string text = File.ReadAllText(_filePath);
+            if (text == null)
+                return new List<User>();
+            return JsonSerializer.Deserialize<List<User>>(text);
+        }
+        private void SaveData()
+        {
+            string jsonString = JsonSerializer.Serialize(value: _users, options: new JsonSerializerOptions()
+            {
+                WriteIndented = true
+            });
+
+            File.WriteAllText(_filePath, jsonString);
+        }
+
+        private void OnTimedEvent(object sender, ElapsedEventArgs e)
+        {
+            _remainingSeconds--;
+        }
     }
 }

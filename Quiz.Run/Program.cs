@@ -1,5 +1,6 @@
 ﻿using Quiz.Repository;
-using System.Threading.Tasks.Sources;
+using Home = Quiz.Repository.QuizRepository;
+
 
 namespace Quiz.Run
 {
@@ -7,42 +8,13 @@ namespace Quiz.Run
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello, Welcome to my quiz application\nPlease enter your name and email to continue");
-            Console.Write("Name:");
-            string userName = Console.ReadLine();
-            Console.Write("Mail:");
-            string userMail = Console.ReadLine();
+            string QuizRelativePath = Path.Combine("Data", "Quiz.json");
+            string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            string projectDirectory = Directory.GetParent(baseDirectory).Parent.Parent.Parent.FullName;
 
-            UserRepository userRepo = new(@"D:\Other\PROGRAMIREBA\C#\DoItStepFinal1\Quiz.Run\Data\Users.json", userName, userMail);
-            QuizRepository quizRepo = new(@"D:\Other\PROGRAMIREBA\C#\DoItStepFinal1\Quiz.Run\Data\Quiz.json");
-
-            Console.WriteLine($"Hello {userName}\nIn this quiz app you can create your quizes or enjoy with already created ones" +
-                $"\nType 0 to take a quiz\nType 1 to create your own");
-            userRepo.GetTop10();
-            var refNum = byte.Parse(Console.ReadLine());
-
-            if (refNum == (byte)1)
-            {
-                userRepo.CreateQuiz();
-            }
-            else if (refNum == (byte)0)
-            {
-                if (quizRepo.GetLength() == 0)
-                {
-                    Console.WriteLine("Looks like there are no quizes avaliable. try creating your own one");
-                    userRepo.CreateQuiz();
-                }
-                else
-                {
-                    Console.WriteLine($"Pick a Number between 1 and {quizRepo.GetLength()}");
-                    var quizId = byte.Parse(Console.ReadLine());
-                    userRepo.TakeQuiz(quizId);
-                    Console.WriteLine("Now You can see whether or not you made it into the Top 10 Highest Scorers");
-                    userRepo.GetTop10();
-                }
-            }
-            else { throw new Exception("Wtf are you doing"); }
-
+            Console.WriteLine(Path.Combine(projectDirectory, QuizRelativePath));
+            QuizRepository Qrepo = new(Path.Combine(projectDirectory, QuizRelativePath));
+            Home.StartPage();
         }
     }
 }

@@ -3,24 +3,12 @@
     "id": 1,
     "Name": "nika",
     "Mail": "nika@gmail.com",
-    "BestScore": 0
+    "BestScore": 40
   },
   {
     "id": 2,
     "Name": "tengo",
     "Mail": "tengo@gmail.com",
-    "BestScore": 0
-  },
-  {
-    "id": 3,
-    "Name": "luka",
-    "Mail": "l@g",
-    "BestScore": 0
-  },
-  {
-    "id": 4,
-    "Name": "Tengo",
-    "Mail": "Tengo@gmail.com",
     "BestScore": 60
   }
 ]
