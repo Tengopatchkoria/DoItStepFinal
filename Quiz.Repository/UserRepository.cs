@@ -106,7 +106,7 @@ namespace Quiz.Repository
 
         public static int UpdateScore(string userAnswer, string correctAnswer, int score)
         {
-            if (userAnswer.Equals(correctAnswer))
+            if (userAnswer.Equals(correctAnswer, StringComparison.OrdinalIgnoreCase))
                 return score += 20;
             else { return score -= 20; }
         }
@@ -115,7 +115,8 @@ namespace Quiz.Repository
         {
             List<Question> Qlist = new();
             QuestionRepository q = new();
-
+            
+            Console.Clear();
             Console.WriteLine("Create a name for your quiz");
             var QuizName = Console.ReadLine();
 
@@ -135,16 +136,22 @@ namespace Quiz.Repository
 
         public void TakeQuiz(byte qId)
         {
-            QuizRepository Qrepo = new(QuizRelativePath()); var quiz = Qrepo.GetQuiz(qId);
+            QuizRepository Qrepo = new(QuizRelativePath());
+            var quiz = Qrepo.GetQuiz(qId);
             int score = 0;
 
-            if (quiz.UserId == this.MainUser.id)
+            if (quiz.UserId == MainUser.id)
             {
+                Console.Clear();
                 Console.WriteLine("This Quiz is Created By You. Therefore You're Unable to Take it\n" +
                         "However You can Edit/Delete it\n" +
-                        "Press 1 to Delete, Press 0 to Edit");
+                        "1.Edit \n2.Delete \n3.Back");
                 int command = int.Parse(Console.ReadLine().Trim());
-                Qrepo.ModifyQuiz(command, qId, MainUser.id);
+                if(command == 3)
+                    Home.UserHomePage(MainUser.Name, MainUser.Mail);
+                else
+                    Qrepo.ModifyQuiz(command, qId, MainUser.id);
+
                 Environment.Exit(100);
             }
 
@@ -153,7 +160,7 @@ namespace Quiz.Repository
             timer.Elapsed += OnTimedEvent;
             timer.Start();
 
-
+            Console.Clear();
             foreach (var item in quiz.QuestionList)
             {
                 if (_remainingSeconds <= 0) break;
@@ -176,9 +183,9 @@ namespace Quiz.Repository
                     Console.WriteLine($"Nice Work, New Best Score of {score}");
                     SaveData();
                 }
-                Console.WriteLine("Now You can see whether or not you made it into the Top 10 Highest Scorers");
+                Console.WriteLine("Top 10 Highest Scorers:");
                 GetTop10();
-                Thread.Sleep(1000);
+                Thread.Sleep(5000);
                 Home.UserHomePage(MainUser.Name, MainUser.Mail);
             }
             else

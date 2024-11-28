@@ -69,6 +69,7 @@ namespace Quiz.Repository
                 }
                 else
                 {
+                    Console.Clear();
                     var i = 1;
                     foreach (var item in quizRepo.GetAllQuizes())
                     {
@@ -103,9 +104,9 @@ namespace Quiz.Repository
 
         public void ModifyQuiz(int command, byte qId, byte uId)
         {
-            if (command == 1)
+            if (command == 2)
                 DeleteQuiz(qId, uId);
-            else if (command == 0)
+            else if (command == 1)
             {
                 Console.WriteLine("Which question do you want to modify?");
                 byte QuestionId = byte.Parse(Console.ReadLine());
