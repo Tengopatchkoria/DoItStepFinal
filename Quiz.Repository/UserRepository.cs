@@ -72,6 +72,7 @@ namespace Quiz.Repository
             {
                 Console.WriteLine($"User:{user.Name} Top Score:{user.BestScore}");
             }
+            Home.UserHomePage(MainUser.Name, MainUser.Mail);
         }
 
         private User LoginUser(string name)
@@ -132,6 +133,7 @@ namespace Quiz.Repository
 
             QuizRepository Qrepo = new(QuizRelativePath());
             Qrepo.AddQuiz(quizz);
+            Home.UserHomePage(MainUser.Name, MainUser.Mail);
         }
 
         public void TakeQuiz(byte qId)
@@ -150,9 +152,7 @@ namespace Quiz.Repository
                 if(command == 3)
                     Home.UserHomePage(MainUser.Name, MainUser.Mail);
                 else
-                    Qrepo.ModifyQuiz(command, qId, MainUser.id);
-
-                Environment.Exit(100);
+                    Qrepo.ModifyQuiz(command, qId, MainUser);
             }
 
             var timer = new System.Timers.Timer(1000);

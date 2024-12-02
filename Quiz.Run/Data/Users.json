@@ -10,5 +10,11 @@
     "Name": "tengo",
     "Mail": "tengo@gmail.com",
     "BestScore": 60
+  },
+  {
+    "id": 3,
+    "Name": "zuka",
+    "Mail": "zuka@gmail.com",
+    "BestScore": 100
   }
 ]

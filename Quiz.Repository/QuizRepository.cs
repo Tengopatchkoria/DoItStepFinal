@@ -59,7 +59,9 @@ namespace Quiz.Repository
             var refNum = byte.Parse(Console.ReadLine());
 
             if (refNum == (byte)2)
+            {
                 userRepo.CreateQuiz();
+            }
             else if (refNum == (byte)1)
             {
                 if (quizRepo.GetLength() == 0)
@@ -102,15 +104,19 @@ namespace Quiz.Repository
         public List<Quizz> GetAllQuizes() => _quizes;
         public int GetLength() => _quizes.Count;
 
-        public void ModifyQuiz(int command, byte qId, byte uId)
+        public void ModifyQuiz(int command, byte qId, User MainUser)
         {
             if (command == 2)
-                DeleteQuiz(qId, uId);
+            {
+                DeleteQuiz(qId, MainUser.id);
+                UserHomePage(MainUser.Name, MainUser.Mail);
+            }
             else if (command == 1)
             {
                 Console.WriteLine("Which question do you want to modify?");
                 byte QuestionId = byte.Parse(Console.ReadLine());
-                EditQuiz(QuestionId, qId, uId);
+                EditQuiz(QuestionId, qId, MainUser.id);
+                UserHomePage(MainUser.Name, MainUser.Mail);
             }
         }
 
@@ -119,6 +125,7 @@ namespace Quiz.Repository
             if (GetQuiz(id).UserId == uId)
                 _quizes.Remove(GetQuiz(id));
             SaveData();
+
         }
 
         public void EditQuiz(byte id, byte qId, byte uId)
